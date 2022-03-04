@@ -21,9 +21,9 @@ def axisEqual3D(ax):
 
 def Draw_CoordFrame(X, Y, Z, U, V, W, ax, Text, C, L):
     ax.quiver(X, Y, Z, U, V, W, length=L, color=C)
-    ax.text(X[0] + U[0] * L, Y[0] + V[0] * L, Z[0] + W[0] * L, Text + ' x', fontsize=12)
-    ax.text(X[0] + U[1] * L, Y[0] + V[1] * L, Z[0] + W[1] * L, Text + ' y', fontsize=12)
-    ax.text(X[0] + U[2] * L, Y[0] + V[2] * L, Z[0] + W[2] * L, Text + ' z', fontsize=12)
+    ax.text(X[0] + U[0] * L, Y[0] + V[0] * L, Z[0] + W[0] * L, '$'+ Text + ' x$', fontsize=12)
+    ax.text(X[0] + U[1] * L, Y[0] + V[1] * L, Z[0] + W[1] * L, '$'+ Text + ' y$', fontsize=12)
+    ax.text(X[0] + U[2] * L, Y[0] + V[2] * L, Z[0] + W[2] * L, '$'+ Text + ' z$', fontsize=12)
 
 def Rotz(angle):
     return R.from_euler('z', angle, degrees=False).as_matrix()
