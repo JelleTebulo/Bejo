@@ -31,16 +31,18 @@ def Rotz(angle):
 
 
 ### Params
-Radius     = 7.85 / 2                           # Radius of the dish
-h          = Radius / 1.6                       # Height of the dish
-phi        = np.radians(120)                    # Angle of the seed with respect to the x-axis
-psi        = np.radians(60)                     # Angle of the pin with respect to the dish
-x          = -1.7                               # x-coordinate of the seed
-y          = -2.3                               # y-coordinate of the seed
-Pin_width  = 1                                  # Width of the pin
-Pin_thick  = 0.3                                # Thickness of the pin
-L_lim      = h/np.tan((psi))                    # Length limit to grab the seed
-L_zaadje   = L_lim                              # Length seed visualisation
+Radius         = 7.85 / 2                           # Radius of the dish
+h              = Radius / 1.6                       # Height of the dish
+phi            = np.radians(130)                    # Angle of the seed with respect to the x-axis
+psi            = np.radians(60)                     # Angle of the pin with respect to the dish
+x              = -1.7                               # x-coordinate of the seed
+y              = -2.3                               # y-coordinate of the seed
+Pin_width_top  = 1                                  # Width of the pin
+Pin_thick_top  = 0.5                                # Thickness of the pin
+Pin_width_bot  = 1                                  # Width of the pin
+Pin_thick_bot  = 0.5                                # Thickness of the pin
+L_lim          = h/np.tan((psi))                    # Length limit to grab the seed
+L_zaadje       = L_lim                              # Length seed visualisation
 
 scatter_size = 3
 line_width   = 1
@@ -61,20 +63,21 @@ else:
     theta = np.radians(180)-phi
     z     = Symbol('x')
     z     = solve(z ** 2 - (Radius ** 2 - c ** 2 + 2 * z * c * np.cos(theta)), z)
+    # z     = (2*c*np.cos(theta)+np.sqrt(4*c**2*np.cos(theta)**2-4*(-R**2+c**2)))/2
     L     = float(max(z)-b)
 
-### Compute box around seed
-Pin_t_proj = Pin_thick/2*(np.cos(np.pi/2-psi))                               # Projected width needed for length
+### Compute box around seed top
+Pin_t_proj = Pin_thick_top / 2 * (np.cos(np.pi / 2 - psi))                               # Projected width needed for length
 P_seed     = np.array([[x], [y], [0]])                                       # Position seed
 P_1        = P_seed + np.array([[L_lim * np.cos(phi)], [L_lim * np.sin(phi)], [0]])
 P_2        = P_1 + np.array([[0], [0], [h]])
-P_31       = np.array([[Pin_t_proj], [Pin_width], [0]])
-P_32       = np.array([[-Pin_t_proj], [-Pin_width], [0]])
-P_33       = np.array([[Pin_t_proj],  [-Pin_width], [0]])
-P_34       = np.array([[-Pin_t_proj], [Pin_width],  [0]])
-Ps_3       = P_2 + Rotz(phi) @ np.hstack((P_31, P_32, P_33, P_34))
-Ps_4       = P_seed + Rotz(phi) @ np.hstack((P_31, P_32, P_33, P_34))
-Ps         = np.hstack((Ps_3, Ps_4))
+P_bot1     = np.array([[Pin_t_proj], [Pin_width_top], [0]])
+P_bot2     = np.array([[-Pin_t_proj], [-Pin_width_top], [0]])
+P_bot3     = np.array([[Pin_t_proj], [-Pin_width_top], [0]])
+P_bot4     = np.array([[-Pin_t_proj], [Pin_width_top], [0]])
+P_top      = P_2 + Rotz(phi) @ np.hstack((P_bot1, P_bot2, P_bot3, P_bot4))
+P_bot      = P_seed + Rotz(phi) @ np.hstack((P_bot1, P_bot2, P_bot3, P_bot4))
+Ps         = np.hstack((P_top, P_bot))
 ### Check feasibility
 Ps_3_L     = np.linalg.norm(Ps[:2, :], axis=0)
 Check      = all(Ps_3_L < Radius)
@@ -116,25 +119,25 @@ Y = np.array([0, 0, 0])
 Z = np.array([0, 0, 0])
 Draw_CoordFrame(X, Y, Z, U, V, W, ax, '', 'blue', Radius)            # Teken coordinate frame
 ax.text(0, 0, 0, 'O')
-ax.scatter(*P_seed, color='cyan', s=30, alpha=1)                     # Teken zaadje
+ax.scatter(*P_seed, color='k', s=50, alpha=1)                     # Teken zaadje
 ax.scatter(*P_1, color=col, s=scatter_size, alpha=1)                 # Teken pincet schaaltje onder
 ax.text(P_1[0][0], P_1[1][0], P_1[2][0], '$P_1$')
 ax.scatter(*P_2, color=col, s=scatter_size, alpha=1)                 # Teken pincet schaaltje boven
-ax.scatter(*Ps_3, color=col, s=scatter_size, alpha=1)
-ax.plot(*Ps_3[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width)
-ax.plot(*Ps_4[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width)
+ax.scatter(*P_top, color=col, s=scatter_size, alpha=1)
+ax.plot(*P_top[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width)
+ax.plot(*P_bot[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width)
 ax.text(P_2[0][0], P_2[1][0], P_2[2][0], '$P_2$')
-ax.text(P_seed[0][0], P_seed[1][0], P_seed[2][0], '$(P_{seed}'+str(x)+','+str(y)+')$')
+ax.text(P_seed[0][0], P_seed[1][0], P_seed[2][0], '$P_{seed} ('+str(x)+','+str(y)+')$')
 for i in range(4):
-    ax.text(Ps_3[0, i], Ps_3[1, i], Ps_3[2, i], '$P_{3'+str(i)+'}$')
-    ax.text(Ps_4[0, i], Ps_4[1, i], Ps_4[2, i], '$P_{4'+str(i)+'}$')
+    ax.text(P_top[0, i], P_top[1, i], P_top[2, i], '$P_{Top' + str(i) + '}$')
+    ax.text(P_bot[0, i], P_bot[1, i], P_bot[2, i], '$P_{Bot' + str(i) + '}$')
 ax.plot(*np.hstack((P_2, P_seed)), color='k', linewidth=line_width)
 ax.plot(*np.hstack((P_1, P_2)), color='k', linewidth=line_width)
-ax.plot(*np.hstack((P_1, P_seed)), color='k', linewidth=line_width)
-ax.plot(*np.hstack((Ps_3[:, 0].reshape(3, 1), Ps_4[:, 0].reshape(3, 1))), color=col, linewidth=line_width)
-ax.plot(*np.hstack((Ps_3[:, 1].reshape(3, 1), Ps_4[:, 1].reshape(3, 1))), color=col, linewidth=line_width)
-ax.plot(*np.hstack((Ps_3[:, 2].reshape(3, 1), Ps_4[:, 2].reshape(3, 1))), color=col, linewidth=line_width)
-ax.plot(*np.hstack((Ps_3[:, 3].reshape(3, 1), Ps_4[:, 3].reshape(3, 1))), color=col, linewidth=line_width)
+ax.plot(*np.hstack((P_1, P_seed)), color='k', linewidth=3*line_width)
+ax.plot(*np.hstack((P_top[:, 0].reshape(3, 1), P_bot[:, 0].reshape(3, 1))), color=col, linewidth=line_width)
+ax.plot(*np.hstack((P_top[:, 1].reshape(3, 1), P_bot[:, 1].reshape(3, 1))), color=col, linewidth=line_width)
+ax.plot(*np.hstack((P_top[:, 2].reshape(3, 1), P_bot[:, 2].reshape(3, 1))), color=col, linewidth=line_width)
+ax.plot(*np.hstack((P_top[:, 3].reshape(3, 1), P_bot[:, 3].reshape(3, 1))), color=col, linewidth=line_width)
 
 if Check:
     Text = 'Seed can be grabbed :)'
