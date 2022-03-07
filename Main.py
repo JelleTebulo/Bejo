@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 
+def legend_without_duplicate_labels(ax):
+    handles, labels = ax.get_legend_handles_labels()
+    unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
+    ax.legend(*zip(*unique))
+
+
 def axisEqual3D(ax):
     """
     :param ax: Generates equal axes for the 3d plot for axes ax
@@ -37,7 +43,7 @@ phi            = np.radians(110)                    # Angle of the seed with res
 psi            = np.radians(60)                     # Angle of the pin with respect to the dish
 x              = -17                                # x-coordinate of the seed
 y              = -23                                # y-coordinate of the seed
-margin         = 0                                  # Margin closest distance from seed to the wall
+margin         = 3                                  # Margin closest distance from seed to the wall
 Pin_width_top  = 11                                 # Width of the pin
 Pin_thick_top  = 5                                  # Thickness of the pin
 Pin_width_bot  = 10                                 # Width of the pin
@@ -132,12 +138,12 @@ Z = np.array([0, 0, 0])
 Draw_CoordFrame(X, Y, Z, U, V, W, ax, '', 'blue', Radius)                                  # coordinate frame
 ax.text(0, 0, 0, 'O')
 ax.scatter(*P_seed, color='k', s=50, alpha=1, label='Seed')                                              # zaadje
-ax.scatter(*P_1, color=col, s=scatter_size, alpha=1, label='Pincet')                                       # pincet schaaltje onder
+ax.scatter(*P_1, color=col, s=scatter_size, alpha=1)                                       # pincet schaaltje onder
 ax.text(P_1[0][0], P_1[1][0], P_1[2][0], '$P_1$')
-ax.scatter(*P_2, color=col, s=scatter_size, alpha=1, label='Pincet')                                       # pincet schaaltje boven
-ax.scatter(*P_top, color=col, s=scatter_size, alpha=1, label='Pincet')
-ax.plot(*P_top[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width, label='Pincet')
-ax.plot(*P_bot[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width, label='Pincet')
+ax.scatter(*P_2, color=col, s=scatter_size, alpha=1)                                       # pincet schaaltje boven
+ax.scatter(*P_top, color=col, s=scatter_size, alpha=1)
+ax.plot(*P_top[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width, label='Pincet frame')
+ax.plot(*P_bot[:, [1, 2, 0, 3, 1]], color=col, linewidth=line_width, label='Pincet frame')
 ax.text(P_2[0][0], P_2[1][0], P_2[2][0], '$P_2$')
 ax.text(P_seed[0][0], P_seed[1][0]-3, P_seed[2][0], '$P_{seed} ('+str(x)+','+str(y)+')$')
 for i in range(4):
@@ -164,7 +170,7 @@ ax.set_xlabel('$x$-axis $[mm]$')
 ax.set_ylabel('$y$-axis $[mm]$')
 ax.set_zlabel('$z$-axis $[mm]$')
 ax.set_proj_type('ortho')
-ax.legend()
+legend_without_duplicate_labels(ax)
 axisEqual3D(ax)
 
 # if not (np.radians(-0.1) < phi < np.radians(0.1)) and not (phi > np.radians(179.9) or phi < np.radians(-179.9)):
