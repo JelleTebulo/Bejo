@@ -2,13 +2,14 @@ import numpy as np
 from sympy.solvers import solve
 from sympy import Symbol
 import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 from scipy.spatial.transform import Rotation as R
 
 
-def legend_without_duplicate_labels(ax):
-    handles, labels = ax.get_legend_handles_labels()
+def legend_without_duplicate_labels(axis):
+    handles, labels = axis.get_legend_handles_labels()
     unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
-    ax.legend(*zip(*unique))
+    axis.legend(*zip(*unique), loc='upper right')
 
 
 def axisEqual3D(ax):
@@ -39,14 +40,14 @@ def Rotz(angle):
 ### Params
 Radius         = 78.5 / 2                           # Radius of the dish
 h              = Radius / 1.6                       # Height of the dish
-phi            = np.radians(110)                    # Angle of the seed with respect to the x-axis
+phi            = np.radians(120)                    # Angle of the seed with respect to the x-axis
 psi            = np.radians(60)                     # Angle of the pin with respect to the dish
 x              = -17                                # x-coordinate of the seed
 y              = -23                                # y-coordinate of the seed
 margin         = 3                                  # Margin closest distance from seed to the wall
-Pin_width_top  = 11                                 # Width of the pin
+Pin_width_top  = 8                                  # Width of the pin
 Pin_thick_top  = 5                                  # Thickness of the pin
-Pin_width_bot  = 10                                 # Width of the pin
+Pin_width_bot  = 7                                  # Width of the pin
 Pin_thick_bot  = 2                                  # Thickness of the pin
 L_lim          = h/np.tan(psi)                      # Length limit to grab the seed
 L_zaadje       = L_lim                              # Length seed visualisation
@@ -76,6 +77,7 @@ else:
 ### Compute box around seed
 P_seed     = np.array([[x], [y], [0]])                                       # Position seed
 P_1        = P_seed + np.array([[L_lim * np.cos(phi)], [L_lim * np.sin(phi)], [0]])
+P_seed2    = P_seed - np.array([[L_lim * np.cos(phi)], [L_lim * np.sin(phi)], [0]])
 P_2        = P_1 + np.array([[0], [0], [h]])
 
 ### Compute box around seed top
@@ -104,7 +106,9 @@ if Check:
 else:
     col = 'red'
 
-############################## Plotting ###########################################
+############################## Plotting figure 1 ###########################################
+minor_ticks = np.arange(-2*Radius, 2*Radius, 10)
+major_ticks = np.arange(-2*Radius, 2*Radius, 5)
 fig    = plt.figure()
 ax     = fig.add_subplot(projection='3d')
 theta  = np.linspace(-np.pi, 3*np.pi, 200, endpoint=True)
@@ -137,7 +141,7 @@ Y = np.array([0, 0, 0])
 Z = np.array([0, 0, 0])
 Draw_CoordFrame(X, Y, Z, U, V, W, ax, '', 'blue', Radius)                                  # coordinate frame
 ax.text(0, 0, 0, 'O')
-ax.scatter(*P_seed, color='k', s=50, alpha=1, label='Seed')                                              # zaadje
+ax.scatter(*P_seed, color='k', s=50, alpha=1, label='Seed')                                # zaadje
 ax.scatter(*P_1, color=col, s=scatter_size, alpha=1)                                       # pincet schaaltje onder
 ax.text(P_1[0][0], P_1[1][0], P_1[2][0], '$P_1$')
 ax.scatter(*P_2, color=col, s=scatter_size, alpha=1)                                       # pincet schaaltje boven
@@ -150,12 +154,12 @@ for i in range(4):
     ax.text(P_top[0, i], P_top[1, i], P_top[2, i], '$P_{Top' + str(i) + '}$')
     ax.text(P_bot[0, i], P_bot[1, i], P_bot[2, i], '$P_{Bot' + str(i) + '}$')
 ax.plot(*np.hstack((P_2, P_seed)), color='k', linewidth=line_width, linestyle='--')        # P2 Pseed
-ax.plot(*np.hstack((P_1, P_2)), color='k', linewidth=line_width, linestyle='--')           # P1 P2
-ax.plot(*np.hstack((P_1, P_seed)), color='k', linewidth=3*line_width)                      # P1 P2
+ax.plot(*np.hstack((P_1, P_seed)), color='k', linewidth=line_width, linestyle='--')        # P2 P1
+ax.plot(*np.hstack((P_seed, P_seed2)), color='k', linewidth=3*line_width)                  # Pseed stalk
 ax.plot(*np.hstack((P_seed, P_seed+np.array([[0.5*Radius], [0], [0]]))), color='k', linewidth=line_width, linestyle='--')    # Pseed line x-axis
-ax.plot(8*np.cos(np.linspace(0, phi, 50)) + P_seed[0], 8*np.sin(np.linspace(0, phi, 50)) + P_seed[1], 0,
+ax.plot(8*np.cos(np.linspace(0, phi, 100)) + P_seed[0], 8*np.sin(np.linspace(0, phi, 100)) + P_seed[1], 0,
                                                                             color='k', linewidth=line_width, linestyle='--') # Pseed arc x-axis
-ax.text(P_seed[0][0]+2, P_seed[1][0]+2, P_seed[2][0], '$\phi =$'+str(np.rad2deg(phi)))
+ax.text(P_seed[0][0]+2, P_seed[1][0]+2, P_seed[2][0], '$\phi =$'+str(np.round(np.rad2deg(phi)))+'$^\circ$')                  # Pseed arc x-axis
 ax.plot(*np.hstack((P_top[:, 0].reshape(3, 1), P_bot[:, 0].reshape(3, 1))), color=col, linewidth=line_width)                 # Vertical boundary
 ax.plot(*np.hstack((P_top[:, 1].reshape(3, 1), P_bot[:, 1].reshape(3, 1))), color=col, linewidth=line_width)                 # Vertical boundary
 ax.plot(*np.hstack((P_top[:, 2].reshape(3, 1), P_bot[:, 2].reshape(3, 1))), color=col, linewidth=line_width)                 # Vertical boundary
@@ -166,12 +170,38 @@ if Check:
 else:
     Text = 'Seed cannot be grabbed :"('
 ax.set_title(Text)
-ax.set_xlabel('$x$-axis $[mm]$')
-ax.set_ylabel('$y$-axis $[mm]$')
-ax.set_zlabel('$z$-axis $[mm]$')
+ax.set_xlabel('$X$-axis $[mm]$')
+ax.set_ylabel('$Y$-axis $[mm]$')
+ax.set_zlabel('$Z$-axis $[mm]$')
 ax.set_proj_type('ortho')
 legend_without_duplicate_labels(ax)
 axisEqual3D(ax)
 
-# if not (np.radians(-0.1) < phi < np.radians(0.1)) and not (phi > np.radians(179.9) or phi < np.radians(-179.9)):
-#     ax.plot([0, c], [0, 0], [0, 0], color='cyan', linewidth=1)                          # Teken lengte c
+############################## Plotting figure 2 ###########################################
+fig2 = plt.figure()
+ax2  = plt.subplot()
+ax2.quiver(np.array([0, 0]), np.array([0, 0]), np.array([1, 0]), np.array([0, 1]), scale=2.5, color='blue', label='Coordinate frame', width=0.005)
+ax2.text(X[0] + U[0]*Radius, Y[0] + V[0]*Radius, '$x$', fontsize=12)
+ax2.text(X[0] + U[1]*Radius, Y[0] + V[1]*Radius, '$y$', fontsize=12)                                        # Assenstelsel
+ax2.plot([-Radius, Radius], [0, 0], color='k', linestyle='-', linewidth=1)                                  # Assenstelsel lines
+ax2.plot([0, 0], [-Radius, Radius], color='k', linestyle='-', linewidth=1)                                  # Assenstelsel lines
+ax2.plot(Radius*np.cos(np.linspace(0, 2*np.pi, 100)), Radius*np.sin(np.linspace(0, 2*np.pi, 100)),
+         color='grey', linewidth=line_width, linestyle='-', label='Bakje')                                  # Bakje
+ax2.plot(*np.hstack((P_seed[:2], P_seed2[:2])), color='k', linewidth=3*line_width, linestyle='-',label='Seed')  # Pseed stalk
+ax2.scatter(P_seed[0], P_seed[1], color='k')                                                                # P2 Pseed
+ax2.plot(*np.hstack((P_1[:2], P_seed[:2])), color='k', linewidth=line_width, linestyle='--')                 # P2 P1
+ax2.text(P_seed[0][0]-2, P_seed[1][0]-2, '$P_{seed} ('+str(x)+','+str(y)+')$')
+ax2.plot([P_seed[0], P_seed[0]], [P_seed[1], 0], color='k', linestyle=':', linewidth=1)                     # P2 Pseed line x-axis
+ax2.plot([P_seed[0], 0], [P_seed[1], P_seed[1]], color='k', linestyle=':', linewidth=1)                     # P2 Pseed line y-axis
+ax2.plot(8*np.cos(np.linspace(0, phi, 100)) + P_seed[0], 8*np.sin(np.linspace(0, phi, 100)) + P_seed[1], 0,
+        color='k', linewidth=line_width, linestyle='--')                                                    # Pseed arc x-axis
+ax2.text(P_seed[0][0]+2, P_seed[1][0]+2, '$\phi =$'+str(np.round(np.rad2deg(phi)))+'$^\circ$')              # Pseed arc x-axis
+ax2.set_title('Sketch parameters')
+ax2.set_xlabel('$X$-axis $[mm]$')
+ax2.set_ylabel('$Y$-axis $[mm]$')
+ax2.set_aspect('equal', 'box')
+plt.minorticks_on()
+plt.grid(visible=True, which='major', color='grey', linestyle='-', alpha=0.5)
+plt.grid(visible=True, which='minor', color='grey', linestyle='-', alpha=0.25)
+
+legend_without_duplicate_labels(ax2)
