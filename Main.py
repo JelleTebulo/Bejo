@@ -32,9 +32,45 @@ def Draw_CoordFrame(X, Y, Z, U, V, W, ax, Text, C, L):
     ax.text(X[0] + U[1] * L, Y[0] + V[1] * L, Z[0] + W[1] * L, '$'+ Text + ' y$', fontsize=12)
     ax.text(X[0] + U[2] * L, Y[0] + V[2] * L, Z[0] + W[2] * L, '$'+ Text + ' z$', fontsize=12)
 
+
 def Rotz(angle):
     return R.from_euler('z', angle, degrees=False).as_matrix()
 
+
+def draw_line(v1, v2, ax, Text='', XY_plane=True, Arrow=True, Col='green', Width_Line=0.25):
+    v1 = v1.reshape(2)
+    v2 = v2.reshape(2)
+    if XY_plane:
+        if Arrow:
+            v3 = np.array([0.5, 0.5])
+            ax.text(*(v1 + (v2 - v1) * 0.5)-v3, Text, color=Col)
+            Perc  = 0.08  # due to gap in the middle
+            Perc2 = 0.11  # due to arrow length
+            p_x1 = v1[0] + (v2[0] - v1[0]) * (0.50 - Perc)
+            p_y1 = v1[1] + (v2[1] - v1[1]) * (0.50 - Perc)
+            dx1  = -(v2[0] + (v1[0] - v2[0]) * (0.50 + Perc2)) + v1[0]
+            dy1  = -(v2[1] + (v1[1] - v2[1]) * (0.50 + Perc2)) + v1[1]
+            p_x2 = v1[0] + (v2[0] - v1[0]) * (0.50+Perc)
+            p_y2 = v1[1] + (v2[1] - v1[1]) * (0.50+Perc)
+            dx2  = -(v1[0] + (v2[0] - v1[0]) * (0.50+Perc2)) + v2[0]
+            dy2  = -(v1[1] + (v2[1] - v1[1]) * (0.50+Perc2)) + v2[1]
+            plt.arrow(p_x1, p_y1, dx1, dy1, width=Width_Line, facecolor=Col, edgecolor=Col)
+            plt.arrow(p_x2, p_y2, dx2, dy2, width=Width_Line, facecolor=Col, edgecolor=Col)
+        else:
+            v3 = np.array([0.5, 0.5])
+            ax.text(*(v1 + (v2 - v1) * 0.5)-v3, Text, color=Col)
+            Perc  = 0.08  # due to gap in the middle
+            Perc2 = 0.08  # due to arrow length
+            p_x1 = v1[0] + (v2[0] - v1[0]) * (0.50 - Perc)
+            p_y1 = v1[1] + (v2[1] - v1[1]) * (0.50 - Perc)
+            dx1  = -(v2[0] + (v1[0] - v2[0]) * (0.50 + Perc2)) + v1[0]
+            dy1  = -(v2[1] + (v1[1] - v2[1]) * (0.50 + Perc2)) + v1[1]
+            p_x2 = v1[0] + (v2[0] - v1[0]) * (0.50+Perc)
+            p_y2 = v1[1] + (v2[1] - v1[1]) * (0.50+Perc)
+            dx2  = -(v1[0] + (v2[0] - v1[0]) * (0.50+Perc2)) + v2[0]
+            dy2  = -(v1[1] + (v2[1] - v1[1]) * (0.50+Perc2)) + v2[1]
+            ax.plot([p_x1, p_x1+dx1], [p_y1, p_y1+dy1], linewidth=10*Width_Line, color=Col)
+            ax.plot([p_x2, p_x2+dx2], [p_y2, p_y2+dy2], linewidth=10*Width_Line, color=Col)
 
 
 ### Params
@@ -188,7 +224,7 @@ ax2.plot([0, 0], [-Radius, Radius], color='k', linestyle='-', linewidth=1)      
 ax2.plot(Radius*np.cos(np.linspace(0, 2*np.pi, 100)), Radius*np.sin(np.linspace(0, 2*np.pi, 100)),
          color='grey', linewidth=line_width, linestyle='-', label='Bakje')                                  # Bakje
 ax2.plot(*np.hstack((P_seed[:2], P_seed2[:2])), color='k', linewidth=3*line_width, linestyle='-',label='Seed')  # Pseed stalk
-ax2.scatter(P_seed[0], P_seed[1], color='k')                                                                # P2 Pseed
+ax2.scatter(P_seed[0], P_seed[1], color='k', s=100)                                                                 # P2 Pseed
 ax2.plot(*np.hstack((P_1[:2], P_seed[:2])), color='k', linewidth=line_width, linestyle='--')                 # P2 P1
 ax2.text(P_seed[0][0]-2, P_seed[1][0]-2, '$P_{seed} ('+str(x)+','+str(y)+')$')
 ax2.plot([P_seed[0], P_seed[0]], [P_seed[1], 0], color='k', linestyle=':', linewidth=1)                     # P2 Pseed line x-axis
@@ -196,6 +232,38 @@ ax2.plot([P_seed[0], 0], [P_seed[1], P_seed[1]], color='k', linestyle=':', linew
 ax2.plot(8*np.cos(np.linspace(0, phi, 100)) + P_seed[0], 8*np.sin(np.linspace(0, phi, 100)) + P_seed[1], 0,
         color='k', linewidth=line_width, linestyle='--')                                                    # Pseed arc x-axis
 ax2.text(P_seed[0][0]+2, P_seed[1][0]+2, '$\phi =$'+str(np.round(np.rad2deg(phi)))+'$^\circ$')              # Pseed arc x-axis
+
+draw_line(np.array([0, 0]), np.array([Radius*np.cos(np.deg2rad(135)), Radius*np.sin(np.deg2rad(135))]),
+                                                        ax2, 'R', XY_plane=True, Arrow=False, Col='k', Width_Line=0.25)       # Parameter R
+draw_line(np.array([0, 0]),     np.array([c, 0]),       ax2, 'c', XY_plane=True, Arrow=False, Col='green', Width_Line=0.25)   # Parameter c
+draw_line(np.array([c, 0-0.5]), np.array([a+c, 0-0.5]), ax2, 'a', XY_plane=True, Arrow=False, Col='cyan', Width_Line=0.25)    # Parameter a
+draw_line(np.array([c, 0]),     P_seed[:2],             ax2, 'b', XY_plane=True, Arrow=False, Col='blue', Width_Line=0.25)    # Parameter b
+
+# ax = ax2
+# Col='green'
+# Width_Line=0.25
+# v1 = np.array([0, 0]).reshape(2)
+# v2 = np.array([Radius*np.cos(np.deg2rad(135)), Radius*np.sin(np.deg2rad(135))]).reshape(2)
+#
+# v3 = np.array([0.5, 0.5])
+# ax.text(*(v1 + (v2 - v1) * 0.5) - v3, Text, color=Col)
+# Perc = 0.08  # due to gap in the middle
+# Perc2 = 0.11  # due to arrrow length
+# p_x1 = v1[0] + (v2[0] - v1[0]) * (0.50 - Perc)
+# p_y1 = v1[1] + (v2[1] - v1[1]) * (0.50 - Perc)
+# dx1 = -(v2[0] + (v1[0] - v2[0]) * (0.50 + Perc2)) + v1[0]
+# dy1 = -(v2[1] + (v1[1] - v2[1]) * (0.50 + Perc2)) + v1[1]
+# p_x2 = v1[0] + (v2[0] - v1[0]) * (0.50 + Perc)
+# p_y2 = v1[1] + (v2[1] - v1[1]) * (0.50 + Perc)
+# dx2 = -(v1[0] + (v2[0] - v1[0]) * (0.50 + Perc2)) + v2[0]
+# dy2 = -(v1[1] + (v2[1] - v1[1]) * (0.50 + Perc2)) + v2[1]
+# plt.arrow(p_x1, p_y1, dx1, dy1, width=Width_Line, facecolor=Col, edgecolor=Col)
+# plt.arrow(p_x2, p_y2, dx2, dy2, width=Width_Line, facecolor=Col, edgecolor=Col)
+# plt.plot([p_x1, p_x1 + dx1], [p_y1, p_y1 + dy1], linewidth=4 * Width_Line, color=Col)
+# plt.plot([p_x2, p_x2 + dx2], [p_y2, p_y2 + dy2], linewidth=4 * Width_Line, color=Col)
+
+
+
 ax2.set_title('Sketch parameters')
 ax2.set_xlabel('$X$-axis $[mm]$')
 ax2.set_ylabel('$Y$-axis $[mm]$')
