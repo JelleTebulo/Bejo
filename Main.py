@@ -82,7 +82,7 @@ def draw_line(v1, v2, ax, Text='', Perc=0.08, XY_plane=True, Arrow=True, Col='gr
 ### Params
 Radius         = 78.5 / 2                           # Radius of the dish
 h              = Radius / 1.6                       # Height of the dish
-phi            = np.radians(120)                    # Angle of the seed with respect to the x-axis
+phi            = np.radians(160)                    # Angle of the seed with respect to the x-axis
 psi            = np.radians(60)                     # Angle of the pin with respect to the dish
 x              = -17                                # x-coordinate of the seed
 y              = -23                                # y-coordinate of the seed

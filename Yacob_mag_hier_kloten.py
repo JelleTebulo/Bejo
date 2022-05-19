@@ -1,9 +1,9 @@
 import numpy as np
 
 ### Params
-Radius         = 78.5 / 2                           # Radius of the dish
-h              = Radius / 1.6                       # Height of the dish
-phi            = np.radians(120)                    # Angle of the seed with respect to the x-axis
+Radius         = 85 / 2                           # Radius of the dish
+h              = 40                       # Height of the dish
+phi            = np.radians(160)                    # Angle of the seed with respect to the x-axis
 psi            = np.radians(60)                     # Angle of the pin with respect to the dish
 x              = -17                                # x-coordinate of the seed
 y              = -23                                # y-coordinate of the seed
@@ -29,9 +29,9 @@ else:
     b     = y/np.sin(phi)
     c     = x-a
     theta = np.radians(180)-phi
-    z     = [np.sqrt(Radius**2-c**2*np.sin(theta)**2)+c*np.cos(theta),
-             -np.sqrt(Radius**2-c**2*np.sin(theta)**2)+c*np.cos(theta)]
-    L     = float(max(z)-b)
+    # z     = [np.sqrt(Radius**2-c**2*np.sin(theta)**2)+c*np.cos(theta),
+    #          -np.sqrt(Radius**2-c**2*np.sin(theta)**2)+c*np.cos(theta)]
+    # L     = float(max(z)-b)
 
 ### Compute box around seed
 P_seed     = np.array([[x], [y], [0]])                                       # Position seed
@@ -67,5 +67,3 @@ if Check:
     print('Seed can be grabbed :)')
 else:
     print('Seed cannot be grabbed :"(')
-
-
